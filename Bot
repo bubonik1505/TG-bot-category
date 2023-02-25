@@ -1,0 +1,40 @@
+import telegram
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+
+# Create an instance of the Telegram Bot API using your bot token
+bot = telegram.Bot(token='YOUR_BOT_TOKEN')
+
+# Define the categories and the keywords that should be sorted into them
+categories = {
+    'tech': ['computer', 'software', 'hardware', 'technology'],
+    'sports': ['football', 'basketball', 'baseball', 'hockey'],
+    'news': ['world news', 'local news', 'breaking news', 'current events']
+}
+
+# Define a function that sorts messages into categories based on their content
+def sort_message(update, context):
+    message_text = update.message.text.lower()
+    category = None
+    for cat, keywords in categories.items():
+        for keyword in keywords:
+            if keyword in message_text:
+                category = cat
+                break
+        if category is not None:
+            break
+    if category is None:
+        category = 'other'
+    # Send a reply to the user with the category that the message was sorted into
+    update.message.reply_text(f"Your message was sorted into the {category} category.")
+
+# Define a handler function that listens for new messages and passes them to the sorting function
+def main():
+    updater = Updater(token='YOUR_BOT_TOKEN', use_context=True)
+    dispatcher = updater.dispatcher
+    message_handler = MessageHandler(Filters.text & (~Filters.command), sort_message)
+    dispatcher.add_handler(message_handler)
+    updater.start_polling()
+    updater.idle()
+
+if __name__ == '__main__':
+    main()
