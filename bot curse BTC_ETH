@@ -1,0 +1,42 @@
+import requests
+from telegram.ext import Updater, CommandHandler
+
+# Функция для обработки команды /start
+def start(update, context):
+    update.message.reply_text("Привет! Чтобы узнать текущий курс BTC и ETH, используй команду /crypto")
+
+# Функция для обработки команды /crypto
+def crypto(update, context):
+    # Получение текущего курса BTC и ETH
+    btc_price = get_crypto_price('BTC')
+    eth_price = get_crypto_price('ETH')
+
+    # Отправка сообщения с текущим курсом
+    update.message.reply_text(f"Текущий курс BTC: ${btc_price}\nТекущий курс ETH: ${eth_price}")
+
+# Функция для получения текущего курса криптовалюты
+def get_crypto_price(symbol):
+    url = f'https://api.coingecko.com/api/v3/simple/price?ids={symbol.lower()}&vs_currencies=usd'
+    response = requests.get(url)
+    data = response.json()
+    return data[symbol.lower()]['usd']
+
+def main():
+    # Токен вашего бота
+    updater = Updater("YOUR_TELEGRAM_BOT_TOKEN", use_context=True)
+
+    # Получение диспетчера для регистрации обработчиков
+    dp = updater.dispatcher
+
+    # Регистрация обработчиков команд
+    dp.add_handler(CommandHandler("start", start))
+    dp.add_handler(CommandHandler("crypto", crypto))
+
+    # Запуск бота
+    updater.start_polling()
+
+    # Бот будет работать до принудительной остановки
+    updater.idle()
+
+if __name__ == '__main__':
+    main()
